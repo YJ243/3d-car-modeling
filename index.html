@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=UTF-8 />
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+  </head>
+  <body>
+    <script src="./three.min.js"></script>
+    <script src="./GLTFLoader.js"></script>
+    <script src="./OrbitControls.js"></script> 
+    <script>
+      let scene, camera, renderer;
+
+      function init() {
+        
+        // 씬 (3차원 공간을 만듦)
+        scene = new THREE.Scene(); 
+        scene.background = new THREE.Color(0x000000);//배경색 설정
+        
+        // 카메라를 만들고 배치(45도 수직 시야각도, 종횡비, 시야거리 시작지점, 시야거리 끝지점)
+        camera = new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,1,5000); 
+        camera.rotation.y = 45/180*Math.PI; //45도씩 회전하는 자동차
+        camera.position.x = 800;    //카메라의 x좌표
+        camera.position.y = 100;    //카메라의 y좌표
+        camera.position.z = 1000;   //카메라의 z좌표
+
+        //카메라에서 제어 객체를 만들고 이벤트 리스너를 추가하여 마우스 추적
+        controls = new THREE.OrbitControls(camera);
+        controls.addEventListener('change', renderer);
+
+        hlight = new THREE.AmbientLight (0x404040,100); //라이트
+        scene.add(hlight);
+        
+        directionalLight = new THREE.DirectionalLight(0xffffff,100);  //흰색 주변 조명 생성
+        directionalLight.position.set(0,1,0);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);  //장면에 추가함
+
+        //4개의 포인트 라이트 추가하고 차 주위에 배치, 자동으로 그림자를 투사함
+        light = new THREE.PointLight(0xc4c4c4,10);  //빛을 생성
+        light.position.set(500,300,500); //위치 지정
+        scene.add(light); //빛을 장면에 추가
+
+        light2 = new THREE.PointLight(0xc4c4c4,10); //빛을 또 생성
+        light2.position.set(500,100,0); //위치 지정
+        scene.add(light2); //빛을 장면에 추가
+
+        light3 = new THREE.PointLight(0xc4c4c4,10); //빛을 또 생성
+        light3.position.set(0,100,-500); //위치 지정
+        scene.add(light3); //빛을 장면에 추가
+
+        light4 = new THREE.PointLight(0xc4c4c4,10);
+        light4.position.set(-500,300,500); //위치 지정
+        scene.add(light4);  //빛을 장면에 추가
+
+        //렌더러(각 요소들을 화면에 3D로 기록하는 작업)
+        //렌더러 정의 및 크기 지정, 문서에 추가하기
+        renderer = new THREE.WebGLRenderer({antialias:true}); 
+        renderer.setSize(window.innerWidth,window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        
+        //GLTF loader 클래스 사용
+        let loader = new THREE.GLTFLoader();
+        //모델 파일 로드
+        loader.load('./scene.gltf', function(gltf){
+          car = gltf.scene.children[0];
+          car.scale.set(0.5,0.5,0.5); //자동차 크기 조정
+          scene.add(gltf.scene); //생성한 자동차 모델 장면에 추가
+
+          
+          animate();
+        });
+      }
+
+      //카메라를 회전할 떄 장면을 업데이트하는 애니메이션 루프 추가
+      function animate() {
+        //실제적으로 렌더링 엔진이 scene장면을 카메라의 위치와 바라보는 방향으로 장면을 만들어서 보여주는 부분
+        renderer.render(scene,camera);
+        //프레임 처리
+        requestAnimationFrame(animate);
+      }
+      init();
+    </script>
+  </body>
+</html>
